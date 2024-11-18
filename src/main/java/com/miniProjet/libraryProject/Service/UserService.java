@@ -17,7 +17,7 @@ public class UserService {
     public Users registerUser(UserRegistrationDTO userDTO) {
         // Check if the email is already registered
         if (userRepository.findByEmail(userDTO.getEmail()) != null) {
-            throw new RuntimeException("Email is already registered!.");
+            throw new RuntimeException("Email is already registered.");
         }
 
         // Create a new user from DTO

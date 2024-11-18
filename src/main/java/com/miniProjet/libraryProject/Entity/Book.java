@@ -1,6 +1,8 @@
 package com.miniProjet.libraryProject.Entity;
 
 import com.miniProjet.libraryProject.Enumes.Category;
+import com.miniProjet.libraryProject.Enumes.StateBook;
+import com.miniProjet.libraryProject.Enumes.StateBook;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,7 +17,7 @@ public class Book {
     private String author;
     private String sujet;
     private Category category;
-    private com.miniProjet.libraryProject.Enumes.StateBook StateBook;
+    private StateBook stateBook;
     @Column(name="cover",length = 50000000)
     private byte[] cover;
 

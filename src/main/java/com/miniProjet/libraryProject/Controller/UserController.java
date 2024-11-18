@@ -18,6 +18,7 @@ public class UserController {
         this.userService = userService;
     }
 
+
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserRegistrationDTO userDTO) {
         try {
