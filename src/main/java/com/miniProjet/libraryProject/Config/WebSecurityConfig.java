@@ -1,19 +1,28 @@
 package com.miniProjet.libraryProject.Config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.miniProjet.libraryProject.Entity.Users;
+import com.miniProjet.libraryProject.Repository.UserRepository;
+
 import static org.springframework.security.config.Customizer.withDefaults;
+
+import java.util.List;
 
 @Configuration
 public class WebSecurityConfig {
-
+ @Autowired
+    private UserRepository userRepository;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // Configure HttpSecurity using new practices introduced in Spring Security 6.x
@@ -38,11 +47,15 @@ public class WebSecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> {
-            return User.builder()
-                    .username("user") // Set username
-                    .password(passwordEncoder().encode("password")) // Set password
-                    .roles("USER") // Set role
-                    .build();
+            Users user = userRepository.findByEmail(username); // Use email as the username
+            if (user == null) {
+                throw new UsernameNotFoundException("User not found");
+            }
+            return new org.springframework.security.core.userdetails.User(
+                    user.getEmail(),
+                    user.getPassword(),
+                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+            );
         };
     }
     
