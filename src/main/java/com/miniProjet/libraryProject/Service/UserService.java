@@ -2,6 +2,7 @@ package com.miniProjet.libraryProject.Service;
 
 import com.miniProjet.libraryProject.DTO.UserRegistrationDTO;
 import com.miniProjet.libraryProject.Entity.Users;
+import com.miniProjet.libraryProject.Exception.EmailAlreadyExistsException;
 import com.miniProjet.libraryProject.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,10 +20,10 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public Users registerUser(UserRegistrationDTO userDTO) {
-        // Check if the email is already registered
         if (userRepository.findByEmail(userDTO.getEmail()) != null) {
-            throw new RuntimeException("Email is already registered.");
-        }
+    throw new EmailAlreadyExistsException("Email is already registered.");
+    }
+
 
         // Encode the password before setting it
         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
@@ -65,7 +66,7 @@ public class UserService {
 
     // Method to find a user by email
     public Users getUserByEmail(String email) {
-        Users user = userRepository.findByEmail(email); // Correct method usage
+        Users user = userRepository.findByEmail(email);  // Correct method usage
         if (user == null) {
             throw new RuntimeException("User not found with email: " + email);
         }
