@@ -5,6 +5,10 @@ import com.miniProjet.libraryProject.Entity.Users;
 import com.miniProjet.libraryProject.Service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,12 +58,17 @@ public class UserController {
     }
 
     // New endpoint to get details of the currently authenticated user
-    @GetMapping("/me")
-    public ResponseEntity<Object> getCurrentUser(Authentication authentication) {
-        // Fetch the currently authenticated user from the Authentication object
-        User user = (User) authentication.getPrincipal();
+   @GetMapping("/me")
+public ResponseEntity<Map<String, String>> getCurrentUser(Authentication authentication) {
+    // Fetch the currently authenticated user from the Authentication object
+    org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
 
-        // Return the email or other user details
-        return ResponseEntity.status(HttpStatus.OK).body(user.getUsername());
-    }
+    // Create a response map to return as JSON
+    Map<String, String> response = new HashMap<>();
+    response.put("email", user.getUsername());  // You can also return other user details
+
+    // Return the response as JSON
+    return ResponseEntity.status(HttpStatus.OK).body(response);
+}
+
 }
