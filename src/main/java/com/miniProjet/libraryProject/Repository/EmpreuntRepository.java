@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EmpreuntRepository extends JpaRepository<Emprunt,Long> {
+public interface EmpreuntRepository extends JpaRepository<Emprunt, Long> {
 
     boolean existsByBook_Id(Long id);
 

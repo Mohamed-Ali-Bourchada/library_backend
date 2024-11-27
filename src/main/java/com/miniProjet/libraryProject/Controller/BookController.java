@@ -24,58 +24,62 @@ public class BookController {
     public BookService bookService;
 
     @GetMapping("/")
-    public ResponseEntity<?> allBooks()throws DataFormatException, IOException {
+    public ResponseEntity<?> allBooks() throws DataFormatException, IOException {
         try {
-            List<Book> allBooks=bookService.GetAllBooks();
+            List<Book> allBooks = bookService.GetAllBooks();
             return new ResponseEntity<>(allBooks, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
 
     @PostMapping("/createBook")
-    public ResponseEntity<?> CreateUser(@RequestParam("bookDTO") String bookDTO, @RequestParam("cover") MultipartFile cover) throws DataFormatException, IOException {
+    public ResponseEntity<?> CreateUser(@RequestParam("bookDTO") String bookDTO,
+            @RequestParam("cover") MultipartFile cover) throws DataFormatException, IOException {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            BookRequestDTO bookRequest = objectMapper.readValue(bookDTO, BookRequestDTO.class); // Deserializes the JSON string
+            BookRequestDTO bookRequest = objectMapper.readValue(bookDTO, BookRequestDTO.class); // Deserializes the JSON
+                                                                                                // string
 
             bookService.CreateBook(bookRequest, cover); // Passes the deserialized object and file
             return new ResponseEntity<>("created", HttpStatus.CREATED);
-            //return ResponseEntity.status(HttpStatus.CREATED);
-        }catch (Exception e){
+            // return ResponseEntity.status(HttpStatus.CREATED);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     @PutMapping("{id}/update")
-    public ResponseEntity<?> updteBook(@PathVariable Long id,@RequestBody BookRequestDTO bookTdo){
+    public ResponseEntity<?> updteBook(@PathVariable Long id, @RequestBody BookRequestDTO bookTdo) {
         try {
-            Book bookToUpdate=bookService.UpdateBook(id,bookTdo);
+            Book bookToUpdate = bookService.UpdateBook(id, bookTdo);
             return new ResponseEntity("update success !", HttpStatus.OK);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
     @PutMapping("{id}/updateCover")
-    public ResponseEntity<?> updateCover(@PathVariable Long id,@RequestParam("cover") MultipartFile cover){
-        try{
-            bookService.UpdateCoverBook(id,cover);
+    public ResponseEntity<?> updateCover(@PathVariable Long id, @RequestParam("cover") MultipartFile cover) {
+        try {
+            bookService.UpdateCoverBook(id, cover);
             return new ResponseEntity("update cover success !", HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<?> deleteBook(@PathVariable Long id){
-        try{
+    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+        try {
             bookService.deleteBook(id);
             return new ResponseEntity("delete success !", HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    //get all books
-    //delet book
+    // get all books
+    // delet book
 }

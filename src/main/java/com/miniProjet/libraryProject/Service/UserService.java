@@ -4,6 +4,7 @@ import com.miniProjet.libraryProject.DTO.UserRegistrationDTO;
 import com.miniProjet.libraryProject.Entity.Users;
 import com.miniProjet.libraryProject.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,11 +15,17 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public Users registerUser(UserRegistrationDTO userDTO) {
         // Check if the email is already registered
         if (userRepository.findByEmail(userDTO.getEmail()) != null) {
             throw new RuntimeException("Email is already registered.");
         }
+
+        // Encode the password before setting it
+        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
 
         // Create a new user from DTO
         Users user = new Users();
@@ -28,6 +35,7 @@ public class UserService {
         user.setAdresse(userDTO.getAdresse());
         user.setTelephone(userDTO.getTelephone());
         user.setDateInscri(LocalDate.now());
+        user.setPassword(encodedPassword); // Set the encoded password
 
         // Save the user and return
         return userRepository.save(user);
@@ -42,6 +50,11 @@ public class UserService {
         existingUser.setAdresse(userDTO.getAdresse());
         existingUser.setTelephone(userDTO.getTelephone());
 
+        // If the password is provided, encode and update it
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
+
         return userRepository.save(existingUser);
     }
 
@@ -50,4 +63,12 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    // Method to find a user by email
+    public Users getUserByEmail(String email) {
+        Users user = userRepository.findByEmail(email); // Correct method usage
+        if (user == null) {
+            throw new RuntimeException("User not found with email: " + email);
+        }
+        return user;
+    }
 }

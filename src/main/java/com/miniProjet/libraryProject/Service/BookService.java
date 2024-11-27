@@ -21,12 +21,12 @@ import java.util.zip.Inflater;
 public class BookService {
     @Autowired
     private BookRepository bookRepository;
+
     public void CreateBook(BookRequestDTO bookDto, MultipartFile cover) throws IOException, DataFormatException {
 
-        if (bookRepository.existsByAuthorAndTitle(bookDto.getAuthor(),bookDto.getTitle())){
+        if (bookRepository.existsByAuthorAndTitle(bookDto.getAuthor(), bookDto.getTitle())) {
             throw new RuntimeException("this book is already registered.");
-        }
-        else {
+        } else {
             Book book = new Book();
             book.setAuthor(bookDto.getAuthor());
             book.setTitle(bookDto.getTitle());
@@ -48,60 +48,65 @@ public class BookService {
         return books;
     }
 
-    public Book UpdateBook(Long id,BookRequestDTO bookDto) throws IOException, DataFormatException {
-        Book existingBook = bookRepository.findById(id).orElseThrow(()->new RuntimeException("this book is not registered"));
+    public Book UpdateBook(Long id, BookRequestDTO bookDto) throws IOException, DataFormatException {
+        Book existingBook = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("this book is not registered"));
         existingBook.setTitle(bookDto.getTitle());
         existingBook.setAuthor(bookDto.getAuthor());
         existingBook.setCategory(bookDto.getCategory());
         existingBook.setSujet(bookDto.getSujet());
-//        existingBook.setCover(compressBytes(cover.getBytes()));
+        // existingBook.setCover(compressBytes(cover.getBytes()));
         bookRepository.save(existingBook);
         return existingBook;
     }
+
     public void UpdateCoverBook(Long id, MultipartFile cover) throws IOException, DataFormatException {
-        Book existingBook = bookRepository.findById(id).orElseThrow(()->new RuntimeException("book not found to update cover"));
+        Book existingBook = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("book not found to update cover"));
         existingBook.setCover(compressBytes(cover.getBytes()));
         bookRepository.save(existingBook);
 
     }
-    public void deleteBook(Long id)throws IOException, DataFormatException {
+
+    public void deleteBook(Long id) throws IOException, DataFormatException {
         bookRepository.deleteById(id);
     }
 
     public static byte[] compressBytes(byte[] data) {
-            Deflater deflater = new Deflater();
-            deflater.setInput(data);
-            deflater.finish();
+        Deflater deflater = new Deflater();
+        deflater.setInput(data);
+        deflater.finish();
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-            byte[] buffer = new byte[1024];
-            while (!deflater.finished()) {
-                int count = deflater.deflate(buffer);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+        byte[] buffer = new byte[1024];
+        while (!deflater.finished()) {
+            int count = deflater.deflate(buffer);
+            outputStream.write(buffer, 0, count);
+        }
+        try {
+            outputStream.close();
+        } catch (IOException e) {
+        }
+        System.out.println("Compressed Image Byte Size - " + outputStream.toByteArray().length);
+
+        return outputStream.toByteArray();
+    }
+
+    public static byte[] decompressBytes(byte[] data) {
+        Inflater inflater = new Inflater();
+        inflater.setInput(data);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+        byte[] buffer = new byte[1024];
+        try {
+            while (!inflater.finished()) {
+                int count = inflater.inflate(buffer);
                 outputStream.write(buffer, 0, count);
             }
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-            }
-            System.out.println("Compressed Image Byte Size - " + outputStream.toByteArray().length);
-
-            return outputStream.toByteArray();
+            outputStream.close();
+        } catch (IOException ioe) {
+        } catch (DataFormatException e) {
         }
-        public static byte[] decompressBytes(byte[] data) {
-            Inflater inflater = new Inflater();
-            inflater.setInput(data);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-            byte[] buffer = new byte[1024];
-            try {
-                while (!inflater.finished()) {
-                    int count = inflater.inflate(buffer);
-                    outputStream.write(buffer, 0, count);
-                }
-                outputStream.close();
-            } catch (IOException ioe) {
-            } catch (DataFormatException e) {
-            }
-            return outputStream.toByteArray();
-        }
+        return outputStream.toByteArray();
+    }
 
 }

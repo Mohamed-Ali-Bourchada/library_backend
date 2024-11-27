@@ -13,11 +13,11 @@ public class Emprunt {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="bookId",nullable = false)
+    @JoinColumn(name = "bookId", nullable = false)
     private Book book;
 
     @ManyToOne
-    @JoinColumn(name = "userId",nullable = false)
+    @JoinColumn(name = "userId", nullable = false)
     private Users user;
 
     private LocalDate dateEmprunt;

@@ -18,12 +18,11 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // Configure HttpSecurity using new practices introduced in Spring Security 6.x
         http
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/api/users/register").permitAll() // Allow registration without authentication
-                                .anyRequest().authenticated() // Other requests require authentication
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .requestMatchers("/api/users/register").permitAll() // Allow registration without authentication
+                        .anyRequest().authenticated() // Other requests require authentication
                 )
-                .httpBasic(withDefaults())  // Use HTTP Basic authentication (still valid)
+                .httpBasic(withDefaults()) // Use HTTP Basic authentication (still valid)
                 .csrf(csrf -> csrf.disable()); // Disabling CSRF (use cautiously in production)
 
         return http.build();
@@ -40,9 +39,9 @@ public class WebSecurityConfig {
     public UserDetailsService userDetailsService() {
         return username -> {
             return User.builder()
-                    .username("user")  // Set username
-                    .password(passwordEncoder().encode("password"))  // Set password
-                    .roles("USER")  // Set role
+                    .username("user") // Set username
+                    .password(passwordEncoder().encode("password")) // Set password
+                    .roles("USER") // Set role
                     .build();
         };
     }

@@ -31,62 +31,65 @@ public class EmpruntService {
         if (empreuntRequestDTO.getUser() == null || empreuntRequestDTO.getUser().getId() == null) {
             throw new RuntimeException("User information is missing or invalid.");
         }
-        if (empreuntRepository.existsByBook_IdAndUser_Id(empreuntRequestDTO.getBook().getId(), empreuntRequestDTO.getUser().getId())) {
+        if (empreuntRepository.existsByBook_IdAndUser_Id(empreuntRequestDTO.getBook().getId(),
+                empreuntRequestDTO.getUser().getId())) {
             throw new RuntimeException("this emprenut is ready exist !");
-        }else {
+        } else {
 
+            // Récupérer le livre par son ID
+            Book book = bookRepository.findById(empreuntRequestDTO.getBook().getId())
+                    .orElseThrow(() -> new RuntimeException("Book not found. Please refresh the data."));
 
-        // Récupérer le livre par son ID
-        Book book = bookRepository.findById(empreuntRequestDTO.getBook().getId())
-                .orElseThrow(() -> new RuntimeException("Book not found. Please refresh the data."));
+            // Récupérer l'utilisateur par son ID
+            Users user = userRepository.findById(empreuntRequestDTO.getUser().getId())
+                    .orElseThrow(() -> new RuntimeException("User account not found. Please login."));
 
-        // Récupérer l'utilisateur par son ID
-        Users user = userRepository.findById(empreuntRequestDTO.getUser().getId())
-                .orElseThrow(() -> new RuntimeException("User account not found. Please login."));
-
-            if(book.getStateBook()== StateBook.indisponible){
+            if (book.getStateBook() == StateBook.indisponible) {
                 throw new RuntimeException("This book is indisponible !");
 
             }
 
-        // Vérification de la date de retour prévue
-        if (empreuntRequestDTO.getDateRoutourPrevu() == null) {
-            throw new RuntimeException("Please set a date to return the book.");
-        }
+            // Vérification de la date de retour prévue
+            if (empreuntRequestDTO.getDateRoutourPrevu() == null) {
+                throw new RuntimeException("Please set a date to return the book.");
+            }
 
-        // Créer l'emprunt
-        Emprunt emprunt = new Emprunt();
+            // Créer l'emprunt
+            Emprunt emprunt = new Emprunt();
 
-        emprunt.setBook(book);
-        emprunt.setUser(user);
-        emprunt.setDateEmprunt(LocalDate.now());
-        emprunt.setDateRoutourPrevu(empreuntRequestDTO.getDateRoutourPrevu());
+            emprunt.setBook(book);
+            emprunt.setUser(user);
+            emprunt.setDateEmprunt(LocalDate.now());
+            emprunt.setDateRoutourPrevu(empreuntRequestDTO.getDateRoutourPrevu());
 
-        // Sauvegarder l'emprunt
-        return empreuntRepository.save(emprunt);
+            // Sauvegarder l'emprunt
+            return empreuntRepository.save(emprunt);
         }
     }
 
     public List<Emprunt> getAllEmpruntsForAdmin() {
         return empreuntRepository.findAll();
     }
+
     public List<Emprunt> getEmpruntsForUser(Long userId) {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return empreuntRepository.findByUser_Id(userId);
     }
+
     public Emprunt getEmprunt(Long id) {
-       return empreuntRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("Emprunt not found. Please refresh the data."));
+        return empreuntRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Emprunt not found. Please refresh the data."));
 
     }
+
     public Emprunt setDateRetourEffective(long BookId) {
-        Emprunt empruntExiste=empreuntRepository.findById(BookId)
-                .orElseThrow(()->new RuntimeException("Book not found. Please refresh the data."));
+        Emprunt empruntExiste = empreuntRepository.findById(BookId)
+                .orElseThrow(() -> new RuntimeException("Book not found. Please refresh the data."));
         empruntExiste.setDateRoutourEffective(LocalDate.now());
         return empreuntRepository.save(empruntExiste);
     }
-//getAllEmpruntes pour admin
-    //getAllEmpruntes pour chaque user
-    //setDateRetour
+    // getAllEmpruntes pour admin
+    // getAllEmpruntes pour chaque user
+    // setDateRetour
 }
