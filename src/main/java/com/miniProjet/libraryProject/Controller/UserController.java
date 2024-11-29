@@ -82,6 +82,7 @@ public class UserController {
         Map<String, Object> response = new HashMap<>();
         response.put("user", dbUser.getEmail());
         response.put("isAdmin", dbUser.getIsAdmin());
+        response.put("fullName", dbUser.getFullName());
 
         // Return the response
         return ResponseEntity.status(HttpStatus.OK).body(response);
