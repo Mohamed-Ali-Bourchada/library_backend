@@ -45,21 +45,13 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Users updateUser(Long userId, UserRegistrationDTO userDTO) {
-        Users existingUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+    public Users findById(Long userId) {
+        return userRepository.findById(userId).orElse(null); // Return null if not found
+    }
 
-        existingUser.setFullName(userDTO.getFullName());
-        existingUser.setEmail(userDTO.getEmail());
-        existingUser.setDateNaiss(userDTO.getDateNaiss());
-        existingUser.setAdresse(userDTO.getAdresse());
-        existingUser.setTelephone(userDTO.getTelephone());
-
-        // If the password is provided, encode and update it
-        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        }
-
-        return userRepository.save(existingUser);
+    // Update a user in the database
+    public Users updateUser(Users updatedUser) {
+        return userRepository.save(updatedUser);
     }
 
     public void deleteUser(Long userId) {

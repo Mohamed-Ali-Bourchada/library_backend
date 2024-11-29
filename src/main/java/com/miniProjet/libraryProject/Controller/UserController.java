@@ -6,6 +6,7 @@ import com.miniProjet.libraryProject.Repository.UserRepository;
 import com.miniProjet.libraryProject.Service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,15 +40,48 @@ public class UserController {
     }
 
     // Endpoint for updating user details
-    @PutMapping("/{userId}/update")
-    public ResponseEntity<Object> updateUser(@PathVariable Long userId, @RequestBody UserRegistrationDTO userDTO) {
+@GetMapping("/{userId}/profile")
+    public ResponseEntity<Object> getUserProfile(@PathVariable Long userId) {
         try {
-            Users updatedUser = userService.updateUser(userId, userDTO);
-            return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Update failed: " + ex.getMessage());
+            Users user = userService.findById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(user);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching user profile: " + ex.getMessage());
         }
     }
+
+    // PUT: Update user profile by userId
+   @PutMapping("/{userId}/update")
+public ResponseEntity<Object> updateUser(@PathVariable Long userId, @RequestBody UserRegistrationDTO userDTO) {
+    try {
+        // Fetch the user
+        Users existingUser = userService.findById(userId);
+        if (existingUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        // Hash the password before saving it
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hashedPassword = encoder.encode(userDTO.getPassword());
+
+        // Update the user's details
+        existingUser.setFullName(userDTO.getFullName());
+        existingUser.setEmail(userDTO.getEmail());
+        existingUser.setPassword(hashedPassword);  // Save the hashed password
+        existingUser.setDateNaiss(userDTO.getDateNaiss());
+        existingUser.setAdresse(userDTO.getAdresse());
+        existingUser.setTelephone(userDTO.getTelephone());
+
+        // Save the updated user
+        Users updatedUser = userService.updateUser(existingUser);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+    } catch (Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update failed: " + ex.getMessage());
+    }
+}
 
     // Endpoint for deleting a user
     @DeleteMapping("/{userId}/delete")
@@ -83,6 +117,7 @@ public class UserController {
         response.put("user", dbUser.getEmail());
         response.put("isAdmin", dbUser.getIsAdmin());
         response.put("fullName", dbUser.getFullName());
+        response.put("id", dbUser.getId());
 
         // Return the response
         return ResponseEntity.status(HttpStatus.OK).body(response);
