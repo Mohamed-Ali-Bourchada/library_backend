@@ -2,6 +2,7 @@ package com.miniProjet.libraryProject.Controller;
 
 import com.miniProjet.libraryProject.DTO.UserRegistrationDTO;
 import com.miniProjet.libraryProject.Entity.Users;
+import com.miniProjet.libraryProject.Repository.UserRepository;
 import com.miniProjet.libraryProject.Service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.User;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,7 @@ public class UserController {
     public ResponseEntity<Object> registerUser(@RequestBody UserRegistrationDTO userDTO) {
         try {
             Users registeredUser = userService.registerUser(userDTO);
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
         } catch (RuntimeException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Registration failed: " + ex.getMessage());
@@ -56,19 +59,32 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete failed: " + ex.getMessage());
         }
     }
+    @Autowired
+    private UserRepository userRepository;
 
-    // New endpoint to get details of the currently authenticated user
-   @GetMapping("/me")
-public ResponseEntity<Map<String, String>> getCurrentUser(Authentication authentication) {
-    // Fetch the currently authenticated user from the Authentication object
-    org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+    // Endpoint to get details of the currently authenticated user
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(Authentication authentication) {
+        // Get the username (email) from the authenticated user
+        org.springframework.security.core.userdetails.User user =
+                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
 
-    // Create a response map to return as JSON
-    Map<String, String> response = new HashMap<>();
-    response.put("email", user.getUsername());  // You can also return other user details
+        // Fetch the user details from the database
+        Users dbUser = userRepository.findByEmail(user.getUsername());
 
-    // Return the response as JSON
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+        // Check if user exists
+        if (dbUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found"));
+        }
+
+        // Build the response map with user details
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", dbUser.getEmail());
+        response.put("isAdmin", dbUser.getIsAdmin());
+
+        // Return the response
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
 
-}

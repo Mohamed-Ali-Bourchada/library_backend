@@ -14,4 +14,5 @@ public class UserRegistrationDTO {
     private LocalDate dateNaiss;
     private String adresse;
     private String telephone;
+    private boolean isAdmin = false;
 }

@@ -36,7 +36,10 @@ public class UserService {
         user.setAdresse(userDTO.getAdresse());
         user.setTelephone(userDTO.getTelephone());
         user.setDateInscri(LocalDate.now());
-        user.setPassword(encodedPassword); // Set the encoded password
+        // Set the encoded password
+
+        user.setPassword(encodedPassword); 
+        user.setIsAdmin(false);
 
         // Save the user and return
         return userRepository.save(user);

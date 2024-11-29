@@ -29,4 +29,6 @@ public class Users {
     private LocalDate dateInscri;
 
     private String password;
+    private Boolean isAdmin = false;
+
 }
