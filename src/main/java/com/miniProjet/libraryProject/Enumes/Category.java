@@ -8,5 +8,4 @@ public enum Category {
     educatif,
     aventure,
     educative
-
 }

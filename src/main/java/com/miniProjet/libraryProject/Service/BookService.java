@@ -42,7 +42,7 @@ public class BookService {
         List<Book> books = bookRepository.findAll();
         for (Book book : books) {
             if (book.getCover() != null) {
-                book.setCover(compressBytes(book.getCover()));
+                book.setCover(decompressBytes(book.getCover()));
             }
         }
         return books;
