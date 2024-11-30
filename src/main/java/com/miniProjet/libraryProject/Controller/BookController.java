@@ -19,6 +19,7 @@ import java.util.zip.DataFormatException;
 
 @Controller
 @RequestMapping("/api/book")
+@CrossOrigin("*")
 public class BookController {
     @Autowired
     public BookService bookService;
