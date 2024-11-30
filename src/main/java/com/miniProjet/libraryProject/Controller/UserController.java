@@ -1,5 +1,6 @@
 package com.miniProjet.libraryProject.Controller;
 
+import com.miniProjet.libraryProject.DTO.PasswordChangeRequest;
 import com.miniProjet.libraryProject.DTO.UserRegistrationDTO;
 import com.miniProjet.libraryProject.Entity.Users;
 import com.miniProjet.libraryProject.Repository.UserRepository;
@@ -64,13 +65,11 @@ public ResponseEntity<Object> updateUser(@PathVariable Long userId, @RequestBody
         }
 
         // Hash the password before saving it
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String hashedPassword = encoder.encode(userDTO.getPassword());
+
 
         // Update the user's details
         existingUser.setFullName(userDTO.getFullName());
         existingUser.setEmail(userDTO.getEmail());
-        existingUser.setPassword(hashedPassword);  // Save the hashed password
         existingUser.setDateNaiss(userDTO.getDateNaiss());
         existingUser.setAdresse(userDTO.getAdresse());
         existingUser.setTelephone(userDTO.getTelephone());
@@ -82,6 +81,58 @@ public ResponseEntity<Object> updateUser(@PathVariable Long userId, @RequestBody
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update failed: " + ex.getMessage());
     }
 }
+
+
+
+
+@PutMapping("/{userId}/change-password")
+public ResponseEntity<Object> changePassword(
+        @PathVariable Long userId,
+        @RequestBody PasswordChangeRequest passwordRequest,
+        Authentication authentication) {
+    try {
+        String currentPassword = passwordRequest.getCurrentPassword();
+        String newPassword = passwordRequest.getNewPassword();
+        String confirmNewPassword = passwordRequest.getConfirmNewPassword();
+
+        // Validate inputs
+        if (currentPassword == null || newPassword == null || confirmNewPassword == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("All fields are required.");
+        }
+
+        if (!newPassword.equals(confirmNewPassword)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("New password and confirmation do not match.");
+        }
+
+        // Fetch the currently authenticated user
+        org.springframework.security.core.userdetails.User authUser = (org.springframework.security.core.userdetails.User) authentication
+                .getPrincipal();
+        Users user = userService.findById(userId);
+
+        if (user == null || !user.getEmail().equals(authUser.getUsername())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User not found or not authorized.");
+        }
+
+        // Verify the current password
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (!encoder.matches(currentPassword, user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Current password is incorrect.");
+        }
+
+        // Hash the new password and save it
+        String hashedNewPassword = encoder.encode(newPassword);
+        user.setPassword(hashedNewPassword);
+
+        // Save the updated user
+        userService.updateUser(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Password updated successfully.");
+    } catch (Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error updating password: " + ex.getMessage());
+    }
+}
+
 
     // Endpoint for deleting a user
     @DeleteMapping("/{userId}/delete")
