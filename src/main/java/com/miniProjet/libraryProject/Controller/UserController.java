@@ -89,7 +89,7 @@ private PasswordEncoder passwordEncoder;
 
 @PutMapping("/change-password")
 @CrossOrigin(origins = "http://localhost:4200")
-public ResponseEntity<String> changePassword(
+public ResponseEntity<Map<String, String>> changePassword(
         @RequestHeader("Authorization") String authorizationHeader,
         @RequestBody ChangePasswordRequest changePasswordRequest) {
 
@@ -118,26 +118,45 @@ public ResponseEntity<String> changePassword(
                     // Proceed to change the password
                     user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
                     userRepository.save(user);
-                    return ResponseEntity.ok("Password updated successfully");
+
+                    // Return a structured JSON response
+                    Map<String, String> response = new HashMap<>();
+                    response.put("message", "Password updated successfully");
+
+                    return ResponseEntity.ok(response); // Return a 200 OK with the message
                 } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Current password is incorrect");
+                    // Return an error message if current password is incorrect
+                    Map<String, String> response = new HashMap<>();
+                    response.put("message", "Current password is incorrect");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                // Return an unauthorized error if the credentials are invalid
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Invalid credentials");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization header missing or invalid");
+            // Return an unauthorized error if authorization header is missing or invalid
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Authorization header missing or invalid");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     } catch (Exception e) {
-        // Log the exception
+        // Log the exception and return a generic error message
         e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while processing the request");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "An error occurred while processing the request");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }
 
 
     // Endpoint for deleting a user
+    @CrossOrigin(origins = "http://localhost:4200")
+
     @DeleteMapping("/{userId}/delete")
+    
     public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
         try {
             userService.deleteUser(userId); // Calls the service to delete the user
