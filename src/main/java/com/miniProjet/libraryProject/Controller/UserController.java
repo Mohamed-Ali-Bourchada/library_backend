@@ -1,6 +1,6 @@
 package com.miniProjet.libraryProject.Controller;
 
-import com.miniProjet.libraryProject.DTO.PasswordChangeRequest;
+import com.miniProjet.libraryProject.DTO.ChangePasswordRequest;
 import com.miniProjet.libraryProject.DTO.UserRegistrationDTO;
 import com.miniProjet.libraryProject.Entity.Users;
 import com.miniProjet.libraryProject.Repository.UserRepository;
@@ -8,7 +8,9 @@ import com.miniProjet.libraryProject.Service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,54 +84,54 @@ public ResponseEntity<Object> updateUser(@PathVariable Long userId, @RequestBody
     }
 }
 
+@Autowired
+private PasswordEncoder passwordEncoder;
 
+@PutMapping("/change-password")
+@CrossOrigin(origins = "http://localhost:4200")
+public ResponseEntity<String> changePassword(
+        @RequestHeader("Authorization") String authorizationHeader,
+        @RequestBody ChangePasswordRequest changePasswordRequest) {
 
-
-@PutMapping("/{userId}/change-password")
-public ResponseEntity<Object> changePassword(
-        @PathVariable Long userId,
-        @RequestBody PasswordChangeRequest passwordRequest,
-        Authentication authentication) {
     try {
-        String currentPassword = passwordRequest.getCurrentPassword();
-        String newPassword = passwordRequest.getNewPassword();
-        String confirmNewPassword = passwordRequest.getConfirmNewPassword();
+        // Log the input
+        System.out.println("Authorization Header: " + authorizationHeader);
+        System.out.println("ChangePasswordRequest: " + changePasswordRequest);
 
-        // Validate inputs
-        if (currentPassword == null || newPassword == null || confirmNewPassword == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("All fields are required.");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Basic ")) {
+            String encodedCredentials = authorizationHeader.substring(6); // Remove "Basic "
+            String decodedCredentials = new String(Base64.getDecoder().decode(encodedCredentials));
+            String[] credentials = decodedCredentials.split(":");
+
+            String username = credentials[0];
+            String password = credentials[1];
+
+            // Debug: log decoded credentials
+            System.out.println("Decoded Username: " + username);
+            System.out.println("Decoded Password: " + password);
+
+            // Fetch user by username (email in this case)
+            Users user = userRepository.findByEmail(username);
+            if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+                // Check if the current password matches the one in the request
+                if (passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword())) {
+                    // Proceed to change the password
+                    user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+                    userRepository.save(user);
+                    return ResponseEntity.ok("Password updated successfully");
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Current password is incorrect");
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization header missing or invalid");
         }
-
-        if (!newPassword.equals(confirmNewPassword)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("New password and confirmation do not match.");
-        }
-
-        // Fetch the currently authenticated user
-        org.springframework.security.core.userdetails.User authUser = (org.springframework.security.core.userdetails.User) authentication
-                .getPrincipal();
-        Users user = userService.findById(userId);
-
-        if (user == null || !user.getEmail().equals(authUser.getUsername())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User not found or not authorized.");
-        }
-
-        // Verify the current password
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if (!encoder.matches(currentPassword, user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Current password is incorrect.");
-        }
-
-        // Hash the new password and save it
-        String hashedNewPassword = encoder.encode(newPassword);
-        user.setPassword(hashedNewPassword);
-
-        // Save the updated user
-        userService.updateUser(user);
-
-        return ResponseEntity.status(HttpStatus.OK).body("Password updated successfully.");
-    } catch (Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error updating password: " + ex.getMessage());
+    } catch (Exception e) {
+        // Log the exception
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while processing the request");
     }
 }
 
@@ -148,7 +150,7 @@ public ResponseEntity<Object> changePassword(
     private UserRepository userRepository;
 
     // Endpoint to get details of the currently authenticated user
-    @GetMapping("/me")
+    @PostMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(Authentication authentication) {
         // Get the username (email) from the authenticated user
         org.springframework.security.core.userdetails.User user =

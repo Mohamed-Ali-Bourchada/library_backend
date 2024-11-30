@@ -1,11 +1,12 @@
 package com.miniProjet.libraryProject.DTO;
 
-public class PasswordChangeRequest {
+public class ChangePasswordRequest {
     private String currentPassword;
     private String newPassword;
     private String confirmNewPassword;
 
-    // Getters and Setters
+    // Getters and setters
+
     public String getCurrentPassword() {
         return currentPassword;
     }
