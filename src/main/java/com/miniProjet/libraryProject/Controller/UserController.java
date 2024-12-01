@@ -152,19 +152,21 @@ public ResponseEntity<Map<String, String>> changePassword(
 }
 
 
-    // Endpoint for deleting a user
-    @CrossOrigin(origins = "http://localhost:4200")
-
-    @DeleteMapping("/{userId}/delete")
-    
-    public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
-        try {
-            userService.deleteUser(userId); // Calls the service to delete the user
-            return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully");
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete failed: " + ex.getMessage());
-        }
+@CrossOrigin(origins = "http://localhost:4200")
+@DeleteMapping("/{userId}/delete")
+public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
+    try {
+        userService.deleteUser(userId); // Calls the service to delete the user
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "User deleted successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    } catch (RuntimeException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Delete failed: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+}
+
     @Autowired
     private UserRepository userRepository;
 
