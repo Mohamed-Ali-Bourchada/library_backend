@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miniProjet.libraryProject.DTO.BookRequestDTO;
 import com.miniProjet.libraryProject.Entity.Book;
 import com.miniProjet.libraryProject.Entity.Users;
+import com.miniProjet.libraryProject.Enumes.Category;
+import com.miniProjet.libraryProject.Enumes.StateBook;
 import com.miniProjet.libraryProject.Repository.BookRepository;
 import com.miniProjet.libraryProject.Service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +71,35 @@ public class BookController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("getBooksByCategorie/{categorie}")
+    public ResponseEntity<?> getBooksByCategorie(@PathVariable("categorie") String categorie) {
+        try{
+            List<Book> booksByCategorie = bookService.getBooksByCategorie(Category.valueOf(categorie));
+            return new ResponseEntity<>(booksByCategorie, HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("getBooksByState/{disponible}")
+    public ResponseEntity<?> getBooksByState(@PathVariable("disponible") String disponible) {
+        try {
+            List<Book> bookByState=bookService.getBooksByState(StateBook.valueOf(disponible));
+            return new ResponseEntity<>(bookByState, HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/{title}")
+    public ResponseEntity<?> getBooksByTitle(@PathVariable("title") String title) {
+        try {
+            List<Book> bookByState=bookService.getBooksByTitle(title);
+            return new ResponseEntity<>(bookByState, HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     @PutMapping("{id}/update")
     public ResponseEntity<?> updateBook(@PathVariable Long id, @RequestBody BookRequestDTO bookDto) {

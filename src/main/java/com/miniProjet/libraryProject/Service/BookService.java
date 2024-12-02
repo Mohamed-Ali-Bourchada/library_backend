@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miniProjet.libraryProject.DTO.BookRequestDTO;
 import com.miniProjet.libraryProject.Entity.Book;
 import com.miniProjet.libraryProject.Entity.Users;
+import com.miniProjet.libraryProject.Enumes.Category;
 import com.miniProjet.libraryProject.Enumes.StateBook;
 import com.miniProjet.libraryProject.Repository.BookRepository;
 
@@ -43,6 +44,36 @@ public class BookService {
 
     public List<Book> GetAllBooks() {
         List<Book> books = bookRepository.findAll();
+        for (Book book : books) {
+            if (book.getCover() != null) {
+                book.setCover(decompressBytes(book.getCover()));
+            }
+        }
+        return books;
+    }
+    //find book by state
+    public List<Book> getBooksByState(StateBook stateBook) {
+        List<Book> books = bookRepository.findByStateBook(stateBook);
+        for (Book book : books) {
+            if (book.getCover() != null) {
+                book.setCover(decompressBytes(book.getCover()));
+            }
+        }
+        return books;
+    }
+    //find book by titre
+    public List<Book> getBooksByTitle(String title) {
+        List<Book> books = bookRepository.findByTitle(title);
+        for (Book book : books) {
+            if (book.getCover() != null) {
+                book.setCover(decompressBytes(book.getCover()));
+            }
+        }
+        return books;
+    }
+    //find book by cathegorie
+    public List<Book> getBooksByCategorie(Category category) {
+        List<Book> books = bookRepository.findByCategory(category);
         for (Book book : books) {
             if (book.getCover() != null) {
                 book.setCover(decompressBytes(book.getCover()));
