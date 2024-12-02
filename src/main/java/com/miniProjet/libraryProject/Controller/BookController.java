@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.DataFormatException;
 
 @Controller
@@ -36,18 +37,35 @@ public class BookController {
     }
 
     @PostMapping("/createBook")
-    public ResponseEntity<?> CreateUser(@RequestParam("bookDTO") String bookDTO,
-            @RequestParam("cover") MultipartFile cover) throws DataFormatException, IOException {
+    public ResponseEntity<?> createBook(@RequestParam("bookDTO") String bookDTO,
+            @RequestParam("cover") MultipartFile cover) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            BookRequestDTO bookRequest = objectMapper.readValue(bookDTO, BookRequestDTO.class); // Deserializes the JSON
-                                                                                                // string
+            // Define the maximum allowed file size (e.g., 2MB)
+            long maxSizeInBytes = 2 * 1024 * 1024; // 2 MB in bytes
 
-            bookService.CreateBook(bookRequest, cover); // Passes the deserialized object and file
-            return new ResponseEntity<>("created", HttpStatus.CREATED);
-            // return ResponseEntity.status(HttpStatus.CREATED);
+            // Check if the cover file exceeds the maximum allowed size
+            if (cover.getSize() > maxSizeInBytes) {
+                System.out.println("File size is too large: " + cover.getSize() + " bytes");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error",
+                                "La taille du fichier dépasse la limite autorisée de 2 MB. Veuillez télécharger un fichier plus petit."));
+            }
+
+            // Deserialize the bookDTO JSON into a BookRequestDTO object
+            ObjectMapper objectMapper = new ObjectMapper();
+            BookRequestDTO bookRequest = objectMapper.readValue(bookDTO, BookRequestDTO.class);
+
+            // Call the service to create the book
+            bookService.CreateBook(bookRequest, cover);
+
+            // Return a success response as JSON
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("message", "Livre créé avec succès"));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            // Return an error response with details
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -76,11 +94,14 @@ public class BookController {
     public ResponseEntity<?> deleteBook(@PathVariable Long id) {
         try {
             bookService.deleteBook(id);
-            return new ResponseEntity("delete success !", HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(Map.of("message", "Livre supprimé avec succès"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
+
     // get all books
     // delet book
 }
