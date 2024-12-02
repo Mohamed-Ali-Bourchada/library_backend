@@ -62,6 +62,9 @@ public class EmpruntService {
             emprunt.setDateEmprunt(LocalDate.now());
             emprunt.setDateRoutourPrevu(empreuntRequestDTO.getDateRoutourPrevu());
 
+            book.setStateBook(StateBook.indisponible);
+            bookRepository.save(book);
+
             // Sauvegarder l'emprunt
             return empreuntRepository.save(emprunt);
         }
@@ -77,16 +80,25 @@ public class EmpruntService {
         return empreuntRepository.findByUser_Id(userId);
     }
 
+    public List<Emprunt> getEmpruntsForBook(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return empreuntRepository.findByBook_Id(bookId);
+    }
+
     public Emprunt getEmprunt(Long id) {
         return empreuntRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Emprunt not found. Please refresh the data."));
 
     }
 
-    public Emprunt setDateRetourEffective(long BookId) {
-        Emprunt empruntExiste = empreuntRepository.findById(BookId)
+    public Emprunt setDateRetourEffective(long emprentId) {
+        Emprunt empruntExiste = empreuntRepository.findById(emprentId)
                 .orElseThrow(() -> new RuntimeException("Book not found. Please refresh the data."));
         empruntExiste.setDateRoutourEffective(LocalDate.now());
+        Book book =empruntExiste.getBook();
+        book.setStateBook(StateBook.disponible);
+        bookRepository.save(book);
         return empreuntRepository.save(empruntExiste);
     }
     // getAllEmpruntes pour admin
