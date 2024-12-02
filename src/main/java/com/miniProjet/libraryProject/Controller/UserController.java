@@ -4,6 +4,7 @@ import com.miniProjet.libraryProject.DTO.ChangePasswordRequest;
 import com.miniProjet.libraryProject.DTO.UserRegistrationDTO;
 import com.miniProjet.libraryProject.Entity.Users;
 import com.miniProjet.libraryProject.Repository.UserRepository;
+import com.miniProjet.libraryProject.Service.UserProjection;
 import com.miniProjet.libraryProject.Service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,10 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/getAllUsers")
+    public List<UserProjection> getAllUsers() {
+        return userService.getAllUsers();
+    }
     // Endpoint for user registration
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserRegistrationDTO userDTO) {

@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -66,5 +67,9 @@ public class UserService {
             throw new RuntimeException("User not found with email: " + email);
         }
         return user;
+    }
+    
+    public List<UserProjection> getAllUsers() {
+        return userRepository.findAllProjectedBy(); // Fetch users without password
     }
 }
