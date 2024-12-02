@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.DataFormatException;
@@ -70,13 +71,20 @@ public class BookController {
     }
 
     @PutMapping("{id}/update")
-    public ResponseEntity<?> updteBook(@PathVariable Long id, @RequestBody BookRequestDTO bookTdo) {
+    public ResponseEntity<?> updateBook(@PathVariable Long id, @RequestBody BookRequestDTO bookDto) {
         try {
-            Book bookToUpdate = bookService.UpdateBook(id, bookTdo);
-            return new ResponseEntity("update success !", HttpStatus.OK);
-
+            // Attempt to update the book in the database
+            bookService.UpdateBook(id, bookDto);
+            // Return success response if update is successful
+            return ResponseEntity.ok("Livre mis à jour avec succès !");
+        } catch (IllegalArgumentException e) {
+            // If validation fails, return a BAD_REQUEST error with the exception message
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Les données du livre sont invalides : " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            // General error catch
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la mise à jour du livre : " + e.getMessage());
         }
     }
 
@@ -90,15 +98,28 @@ public class BookController {
         }
     }
 
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+    @PostMapping("/deleteBooks")
+    public ResponseEntity<Map<String, Object>> deleteBooks(@RequestBody List<Long> bookIds) {
+        Map<String, Object> response = new HashMap<>();
+
         try {
-            bookService.deleteBook(id);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(Map.of("message", "Livre supprimé avec succès"));
+            // Ensure that the books are actually deleted
+            bookService.deleteBooks(bookIds);
+
+            // Return success response if delete is successful
+            response.put("success", true);
+            response.put("message", "Livres supprimés avec succès !");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            // If validation fails (e.g., invalid book IDs), return a BAD_REQUEST error
+            response.put("success", false);
+            response.put("message", "Les identifiants des livres sont invalides : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+            // General error catch (for database issues, etc.)
+            response.put("success", false);
+            response.put("message", "Erreur lors de la suppression des livres : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
