@@ -15,6 +15,7 @@ public interface EmpreuntRepository extends JpaRepository<Emprunt, Long> {
     boolean existsByBook_IdAndUser_Id(Long id, Long id1);
 
     List<Emprunt> findByUser_Id(Long id);
+    List<Emprunt> findByBook_Id(Long id);
 
     @Override
     Optional<Emprunt> findById(Long id);

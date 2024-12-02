@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 // test
 @Controller
 @RequestMapping("api/empreunt")
+@CrossOrigin("*")
 public class EmpruntController {
     @Autowired
     private EmpruntService empruntService;
@@ -39,21 +41,31 @@ public class EmpruntController {
         }
     }
 
-    @PutMapping("/{bookId}/retour")
-    public ResponseEntity<?> setDateRetour(@PathVariable Long bookId) {
+    @PutMapping("/{empruntId}/retour")
+    public ResponseEntity<?> setDateRetour(@PathVariable Long empruntId) {
         try {
-            Emprunt empruntSetDate = empruntService.setDateRetourEffective(bookId);
-            return new ResponseEntity<>(empruntSetDate, HttpStatus.OK);
+            Emprunt empruntSetDate = empruntService.setDateRetourEffective(empruntId);
+            return new ResponseEntity<>("empruntSetDate", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @GetMapping("/get/{userId}")
+    @GetMapping("/getHistorique/{userId}")
     public ResponseEntity<?> getEmpruntes(@PathVariable Long userId) {
         try {
             List<Emprunt> empruntsForUser = empruntService.getEmpruntsForUser(userId);
             return new ResponseEntity<>(empruntsForUser, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/getBook/{bookId}")
+    public ResponseEntity<?> getEmpruntesForBook(@PathVariable Long bookId) {
+        try {
+            List<Emprunt> empruntsForBook = empruntService.getEmpruntsForBook(bookId);
+            return new ResponseEntity<>(empruntsForBook, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
