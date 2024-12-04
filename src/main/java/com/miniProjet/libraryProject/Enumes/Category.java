@@ -5,7 +5,6 @@ public enum Category {
     Drole,
     Fantastique,
     Historique,
-    Educatif,
     Aventure,
     Educative
 }
