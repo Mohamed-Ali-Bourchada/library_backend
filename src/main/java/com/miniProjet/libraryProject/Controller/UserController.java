@@ -180,13 +180,13 @@ public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
     @PostMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(Authentication authentication) {
         // Get the username (email) from the authenticated user
-        org.springframework.security.core.userdetails.User user =
-                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+        org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) authentication
+                .getPrincipal();
 
         // Fetch the user details from the database
         Users dbUser = userRepository.findByEmail(user.getUsername());
 
-        // Check if user exists
+        // Check if the user exists
         if (dbUser == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "User not found"));
@@ -199,8 +199,10 @@ public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
         response.put("fullName", dbUser.getFullName());
         response.put("id", dbUser.getId());
 
-        // Return the response
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        // Return the response without any additional headers
+        return ResponseEntity.ok()
+                .body(response);
     }
+
 }
 
