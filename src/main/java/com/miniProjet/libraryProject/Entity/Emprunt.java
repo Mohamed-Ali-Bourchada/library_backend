@@ -24,4 +24,5 @@ public class Emprunt {
     private LocalDate dateRoutourPrevu;
     private LocalDate dateRoutourEffective;
 
+
 }

@@ -104,6 +104,7 @@ public class BookService {
 
     @Transactional
     public void deleteBooks(List<Long> bookIds) {
+        
         bookRepository.deleteByIdIn(bookIds); 
     }
 
