@@ -31,11 +31,7 @@ public class EmpruntService {
         if (empreuntRequestDTO.getUser() == null || empreuntRequestDTO.getUser().getId() == null) {
             throw new RuntimeException("User information is missing or invalid.");
         }
-        if (empreuntRepository.existsByBook_IdAndUser_Id(empreuntRequestDTO.getBook().getId(),
-                empreuntRequestDTO.getUser().getId())) {
-            throw new RuntimeException("this emprenut is ready exist !");
-        } else {
-
+         else {
             // Récupérer le livre par son ID
             Book book = bookRepository.findById(empreuntRequestDTO.getBook().getId())
                     .orElseThrow(() -> new RuntimeException("Book not found. Please refresh the data."));
@@ -99,6 +95,7 @@ public class EmpruntService {
         Book book =empruntExiste.getBook();
         book.setStateBook(StateBook.disponible);
         bookRepository.save(book);
+
         return empreuntRepository.save(empruntExiste);
     }
     // getAllEmpruntes pour admin
